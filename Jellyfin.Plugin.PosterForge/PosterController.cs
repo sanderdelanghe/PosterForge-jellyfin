@@ -41,11 +41,19 @@ public class PosterController(IHttpClientFactory httpFactory, IMemoryCache cache
 
     private async Task<SKImage?> Load(string url, CancellationToken ct)
     {
-        var bytes = await cache.GetOrCreateAsync("posterforge:" + url, entry =>
+        if (!cache.TryGetValue("posterforge:" + url, out byte[]? bytes))
         {
-            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-            return httpFactory.CreateClient(NamedClient.Default).GetByteArrayAsync(url, ct);
-        });
+            try
+            {
+                bytes = await httpFactory.CreateClient(NamedClient.Default).GetByteArrayAsync(url, ct);
+                cache.Set("posterforge:" + url, bytes, TimeSpan.FromMinutes(10));
+            }
+            catch (HttpRequestException)
+            {
+                return null;
+            }
+        }
+
         return bytes is null ? null : SKImage.FromEncodedData(bytes);
     }
 }

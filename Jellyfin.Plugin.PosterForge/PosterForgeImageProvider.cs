@@ -62,8 +62,8 @@ public sealed class PosterForgeImageProvider(IHttpClientFactory httpFactory, ILo
         if (logos.Count == 0)
         {
             string[] keys = isMovie
-                ? ["hdmovielogo", "movielogo", "hdmovieclearart", "movieart"]
-                : ["hdtvlogo", "clearlogo", "hdclearart", "clearart"];
+                ? ["hdmovielogo", "movielogo"]
+                : ["hdtvlogo", "clearlogo"];
             logos = Pick(keys.SelectMany(k => Read(fanart, k, "", "url", "lang")), true, "en", "nl");
         }
 
@@ -153,7 +153,24 @@ public sealed class PosterForgeImageProvider(IHttpClientFactory httpFactory, ILo
 
         foreach (var e in array.EnumerateArray())
         {
-            yield return new Art(baseUrl + e.GetProperty(pathKey).GetString(), e.TryGetProperty(langKey, out var l) ? l.GetString() : null);
+            if (!e.TryGetProperty(pathKey, out var pathProp) || pathProp.GetString() is not { Length: > 0 } path)
+            {
+                continue;
+            }
+
+            // TMDB serves rasterized PNGs on /w780/ when requesting .png instead of .svg
+            if (baseUrl.Length > 0 && path.EndsWith(".svg", StringComparison.OrdinalIgnoreCase))
+            {
+                path = Path.ChangeExtension(path, ".png");
+            }
+
+            var lang = e.TryGetProperty(langKey, out var l) ? l.GetString() : null;
+            if (string.IsNullOrEmpty(lang) || lang == "00")
+            {
+                lang = null;
+            }
+
+            yield return new Art(baseUrl + path, lang);
         }
     }
 
