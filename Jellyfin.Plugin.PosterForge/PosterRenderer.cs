@@ -9,22 +9,22 @@ internal static class PosterRenderer
     private const int W = 500, H = 750;
     private const int BottomMargin = 80;      // title sits this far from the bottom edge
     private const int BoxW = 392, BoxH = 200; // logo is contain-fit into this box
-    private const int MaxFontSize = 100, MinFontSize = 16; // title text is fitted into the same box as the logo
+    private const int MaxFontSize = 100, MaxSeasonFontSize = 48, MinFontSize = 16;
     private const int TitleGap = 16;          // space between season text and the logo above it
     private const float LineHeight = 1.08f;
     private const float FrostBlur = 10;       // how blurred the "glass" behind the letters is
     private const byte FrostTint = 100;       // white tint inside the letters (0-255)
-    private const byte FrostRim = 150;        // opacity of the thin highlight around the letters
     private const float BlurSpread = 0.5f;    // blur fades in from this fraction of the poster height
     private const float ShadeRatio = 0.55f;   // bottom portion covered by the shade
     private const float ShadeAlpha = 0.75f;
     private const float ShadeDarken = 0.5f;
+    private const byte MaxShadeChannel = 38;  // prevents bright/white backgrounds from producing a washed-out gray shade
 
     private static readonly SKSamplingOptions Sampling = new(SKFilterMode.Linear, SKMipmapMode.Linear);
 
     /// <summary>
     /// Poster: logo (or text if there is no logo) at the bottom.
-    /// Season: season text at the bottom, logo above it, stronger blur.
+    /// Season: single-line season text at the bottom, logo above it, stronger blur.
     /// </summary>
     public static byte[] Render(SKImage background, SKImage? logo, string? text, bool season, PluginConfiguration cfg)
     {
@@ -38,7 +38,7 @@ internal static class PosterRenderer
         float bottom = H - BottomMargin;
         if (!string.IsNullOrWhiteSpace(text))
         {
-            bottom = DrawText(surface, text, bottom, cfg.FontFamily) - (logo is null ? 0 : TitleGap);
+            bottom = DrawText(surface, text, bottom, cfg.FontFamily, singleLine: season) - (logo is null ? 0 : TitleGap);
         }
 
         if (logo is not null)
@@ -120,7 +120,10 @@ internal static class PosterRenderer
         }
 
         var k = 1 - ShadeDarken;
-        return new SKColor((byte)(r / count * k), (byte)(g / count * k), (byte)(b / count * k));
+        var sr = (byte)Math.Min(MaxShadeChannel, r / count * k);
+        var sg = (byte)Math.Min(MaxShadeChannel, g / count * k);
+        var sb = (byte)Math.Min(MaxShadeChannel, b / count * k);
+        return new SKColor(sr, sg, sb);
     }
 
     private static void DrawShade(SKCanvas canvas, SKColor color)
@@ -139,22 +142,23 @@ internal static class PosterRenderer
 
     /// <summary>
     /// Draws frosted-glass text: the artwork behind the letters is blurred and tinted white, with a
-    /// thin highlight on the edge. The text is fitted into the logo box and ends at <paramref name="bottom"/>;
-    /// returns the top of the text block.
+    /// soft shadow for contrast on bright backgrounds. Single-line mode (used for seasons) scales down
+    /// to fit BoxW on one line without wrapping; multi-line mode wraps inside BoxW x BoxH.
+    /// Ends at <paramref name="bottom"/> and returns the top.
     /// </summary>
-    private static float DrawText(SKSurface surface, string text, float bottom, string fontFamily)
+    private static float DrawText(SKSurface surface, string text, float bottom, string fontFamily, bool singleLine)
     {
         using var typeface = SKTypeface.FromFamilyName(fontFamily, new SKFontStyle(SKFontStyleWeight.ExtraBold, SKFontStyleWidth.Normal, SKFontStyleSlant.Upright));
         using var font = new SKFont(typeface) { Embolden = typeface.FontWeight < 800 };
 
-        // Largest size at which the wrapped text fits the box.
-        float size = MaxFontSize + 2;
+        // Largest size at which the text fits the box.
+        float size = (singleLine ? MaxSeasonFontSize : MaxFontSize) + 2;
         List<string> lines;
         do
         {
             size -= 2;
             font.Size = size;
-            lines = Wrap(text, font);
+            lines = singleLine ? [text] : Wrap(text, font);
         }
         while (size > MinFontSize && (lines.Count * size * LineHeight > BoxH || lines.Any(l => font.MeasureText(l) > BoxW)));
 
@@ -169,6 +173,18 @@ internal static class PosterRenderer
         }
 
         var canvas = surface.Canvas;
+
+        // Soft shadow behind the letters so bright backdrops don't wash out the frosted glass.
+        using (var shadow = new SKPaint
+        {
+            Color = SKColors.Black.WithAlpha(90),
+            IsAntialias = true,
+            ImageFilter = SKImageFilter.CreateDropShadowOnly(0, 2, 6, 6, SKColors.Black.WithAlpha(110))
+        })
+        {
+            canvas.DrawPath(path, shadow);
+        }
+
         using var backdrop = surface.Snapshot();
         canvas.Save();
         canvas.ClipPath(path, SKClipOperation.Intersect, true);
@@ -183,9 +199,6 @@ internal static class PosterRenderer
         }
 
         canvas.Restore();
-
-        using var rim = new SKPaint { Style = SKPaintStyle.Stroke, StrokeWidth = 1.5f, IsAntialias = true, Color = SKColors.White.WithAlpha(FrostRim) };
-        canvas.DrawPath(path, rim);
         return top;
     }
 
