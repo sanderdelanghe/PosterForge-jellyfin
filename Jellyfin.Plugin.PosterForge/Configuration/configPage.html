@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>PosterForge</title>
+</head>
+<body>
+<div id="PosterForgePage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="PosterForgeForm">
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="TmdbApiKey">TMDB API key</label>
+                    <input id="TmdbApiKey" type="text" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="FanartApiKey">Fanart.tv API key (optional)</label>
+                    <input id="FanartApiKey" type="text" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="ServerUrl">Server URL (as seen from this server)</label>
+                    <input id="ServerUrl" type="text" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="BlurPx">Poster blur (px)</label>
+                    <input id="BlurPx" type="number" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="SeasonBlurPx">Season blur (px)</label>
+                    <input id="SeasonBlurPx" type="number" is="emby-input" />
+                </div>
+                <div class="inputContainer">
+                    <label class="inputLabel inputLabelUnfocused" for="FontFamily">Font family</label>
+                    <input id="FontFamily" type="text" is="emby-input" />
+                </div>
+                <button is="emby-button" type="submit" class="raised button-submit block"><span>Save</span></button>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = 'b3f5a1de-6c42-4e8b-9d27-5a1c0f3e7a94';
+            var fields = ['TmdbApiKey', 'FanartApiKey', 'ServerUrl', 'BlurPx', 'SeasonBlurPx', 'FontFamily'];
+            var page = document.querySelector('#PosterForgePage');
+
+            page.addEventListener('pageshow', function () {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    fields.forEach(function (f) { page.querySelector('#' + f).value = config[f]; });
+                    Dashboard.hideLoadingMsg();
+                });
+            });
+
+            page.querySelector('#PosterForgeForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    fields.forEach(function (f) {
+                        var el = page.querySelector('#' + f);
+                        config[f] = el.type === 'number' ? parseInt(el.value, 10) : el.value;
+                    });
+                    ApiClient.updatePluginConfiguration(pluginId, config).then(Dashboard.processPluginConfigurationUpdateResult);
+                });
+            });
+        })();
+    </script>
+</div>
+</body>
+</html>

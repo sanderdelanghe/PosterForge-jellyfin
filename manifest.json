@@ -1,0 +1,12 @@
+[
+  {
+    "guid": "b3f5a1de-6c42-4e8b-9d27-5a1c0f3e7a94",
+    "name": "PosterForge",
+    "overview": "Beautiful, consistent posters for your entire library",
+    "description": "PosterForge gives your whole library one polished, consistent look. Get a matching poster automatically!",
+    "owner": "sanderdelanghe",
+    "category": "Metadata",
+    "imageUrl": "https://raw.githubusercontent.com/sanderdelanghe/PosterForge-jellyfin/main/cover.png",
+    "versions": []
+  }
+]

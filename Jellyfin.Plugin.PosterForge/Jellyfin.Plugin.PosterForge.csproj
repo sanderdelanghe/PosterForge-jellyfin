@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>Jellyfin.Plugin.PosterForge</RootNamespace>
+    <Authors>Sander De Langhe</Authors>
+    <Description>PosterForge gives your whole library one polished, consistent look. Get a matching poster automatically!</Description>
+    <Version>1.0.0.0</Version> <!-- overridden by the release workflow -->
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Jellyfin.Controller" Version="12.0.0" PrivateAssets="all" />
+    <!-- Compile-only: the server already ships SkiaSharp. Match its version if it differs. -->
+    <PackageReference Include="SkiaSharp" Version="3.119.0" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Configuration\configPage.html" />
+  </ItemGroup>
+
+</Project>
