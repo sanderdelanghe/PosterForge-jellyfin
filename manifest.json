@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/sanderdelanghe/PosterForge-jellyfin/main/cover.png",
     "versions": [
       {
+        "version": "1.0.0.1",
+        "changelog": "Fix SVG Parsing",
+        "targetAbi": "12.0.0.0",
+        "sourceUrl": "https://github.com/sanderdelanghe/PosterForge-jellyfin/releases/download/v1.0.0.1/posterforge_1.0.0.1.zip",
+        "checksum": "905c108f1355b158e8fb3670334f74c0",
+        "timestamp": "2026-11-14T18:45:05Z"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "First release",
         "targetAbi": "12.0.0.0",
