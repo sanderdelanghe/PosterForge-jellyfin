@@ -4,7 +4,7 @@
   <img src="cover.png" alt="PosterForge cover art" width="100%">
 </p>
 
-![Jellyfin Plugin](https://img.shields.io/badge/Jellyfin-12.0-blueviolet?style=for-the-badge&logo=jellyfin)
+![Jellyfin Plugin](https://img.shields.io/badge/Jellyfin-12-blueviolet?style=for-the-badge&logo=jellyfin)
 ![License](https://img.shields.io/github/license/sanderdelanghe/PosterForge-jellyfin?style=for-the-badge)
 ![Release](https://img.shields.io/github/v/release/sanderdelanghe/PosterForge-jellyfin?style=for-the-badge)
 
