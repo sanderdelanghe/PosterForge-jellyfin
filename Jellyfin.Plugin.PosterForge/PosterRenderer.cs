@@ -9,11 +9,11 @@ internal static class PosterRenderer
     private const int W = 500, H = 750;
     private const int BottomMargin = 80;      // title sits this far from the bottom edge
     private const int BoxW = 392, BoxH = 200; // logo is contain-fit into this box
-    private const int MaxFontSize = 100, MaxSeasonFontSize = 48, MinFontSize = 16;
+    private const int MaxFontSize = 100, MinFontSize = 16;
     private const int TitleGap = 16;          // space between season text and the logo above it
     private const float LineHeight = 1.08f;
     private const float FrostBlur = 10;       // how blurred the "glass" behind the letters is
-    private const byte FrostTint = 100;       // white tint inside the letters (0-255)
+    private const byte FrostTint = 205;       // white tint inside the letters (0-255)
     private const float BlurSpread = 0.5f;    // blur fades in from this fraction of the poster height
     private const float ShadeRatio = 0.55f;   // bottom portion covered by the shade
     private const float ShadeAlpha = 0.75f;
@@ -142,8 +142,8 @@ internal static class PosterRenderer
 
     /// <summary>
     /// Draws frosted-glass text: the artwork behind the letters is blurred and tinted white, with a
-    /// soft shadow for contrast on bright backgrounds. Single-line mode (used for seasons) scales down
-    /// to fit BoxW on one line without wrapping; multi-line mode wraps inside BoxW x BoxH.
+    /// soft shadow for contrast on bright backgrounds. Single-line mode (used for seasons) scales up
+    /// to fill BoxW on one line without wrapping; multi-line mode wraps inside BoxW x BoxH.
     /// Ends at <paramref name="bottom"/> and returns the top.
     /// </summary>
     private static float DrawText(SKSurface surface, string text, float bottom, string fontFamily, bool singleLine)
@@ -152,7 +152,7 @@ internal static class PosterRenderer
         using var font = new SKFont(typeface) { Embolden = typeface.FontWeight < 800 };
 
         // Largest size at which the text fits the box.
-        float size = (singleLine ? MaxSeasonFontSize : MaxFontSize) + 2;
+        float size = MaxFontSize + 2;
         List<string> lines;
         do
         {
